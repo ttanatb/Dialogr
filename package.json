@@ -1,4 +1,11 @@
 {
-    "name": "com.tanatb.dialgoue.manager",
-    "version": "0.0.1"
+  "name": "com.tanatb.dialgoue.manager",
+  "version": "0.0.1",
+  "displayName": "DialogueManager",
+  "type": "tool",
+  "hideInEditor": false,
+  "dependencies": {
+    "com.dbrizov.naughtyattributes": "2.0.8",
+    "dev.yarnspinner.unity": "1.2.7"
+  }
 }
