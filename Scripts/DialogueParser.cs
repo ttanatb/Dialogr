@@ -4,255 +4,211 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Text;
 
-public struct TextAttribute
+namespace Dialogue
 {
-    public enum Type
+    public class Parser : MonoBehaviour
     {
-        None,
-        Shake,
-    }
+        public static ParsedDialogue Parse(string rawText)
+        {
+            ParsedDialogue result = new ParsedDialogue();
 
-    public Type ModType;
-    public int StartingIndex;
-    public int Length;
-}
+            SplitLine(rawText, out string rawName, out string rawLine);
+            ParseName(rawName, out result.DisplayName, out result.ActorID, out result.DialogueType);
+            ParseLine(rawLine, out result.Line, out result.Attributes);
 
-public enum DialogueType
-{
-    Speech,
-    Thought,
-};
-
-public struct ParsedDialogue
-{
-    public string ActorID;
-    public string DisplayName;
-    public DialogueType DialogueType;
-    public string Line;
-    public TextAttribute[] Attributes;
-
-    public override string ToString(){
-        StringBuilder sb = new StringBuilder();
-        sb.AppendFormat(
-            "ParsedDialogue:\nActorID: {0}\nDisplayName: {1}\nDialogueType: {2}\nLine: {3}\nAttribs:\n",
-            ActorID, DisplayName, DialogueType, Line
-        );
-        if (Attributes != null) {
-            for (int i = 0; i < Attributes.Length; i++) {
-                sb.AppendFormat("\t{0}: {1}", i, Attributes[i]);
-            }
+            return result;
         }
-        return sb.ToString();
-    }  
-}
 
-public class DialogueParser : MonoBehaviour
-{
-    public static ParsedDialogue Parse(string rawText)
-    {
-        ParsedDialogue result = new ParsedDialogue();
-
-        SplitLine(rawText, out string rawName, out string rawLine);
-        ParseName(rawName, out result.DisplayName, out result.ActorID, out result.DialogueType);
-        ParseLine(rawLine, out result.Line, out result.Attributes);
-
-        return result;
-    }
-
-    private static void SplitLine(string rawText, out string rawName, out string rawLine)
-    {
-        rawName = "";
-
-        int indexOfColon = rawText.IndexOf(':');
-        if (indexOfColon != -1)
+        private static void SplitLine(string rawText, out string rawName, out string rawLine)
         {
-            rawName = rawText.Substring(0, indexOfColon);
-            rawName = RemoveLeadingTrailingWhiteSpace(rawName);
+            rawName = "";
 
-            rawLine = rawText.Substring(indexOfColon + 1, rawText.Length - indexOfColon - 1);
-            rawLine = RemoveLeadingTrailingWhiteSpace(rawLine);
-        }
-        else
-        {
-            rawLine = rawText;
-            rawLine = RemoveLeadingTrailingWhiteSpace(rawLine);
-        }
-    }
-
-    private static void ParseName(
-        string rawName, out string displayName, out string actorID, out DialogueType dialogueType)
-    {
-        // TODO: design a way to distinguish this
-        // TODO: then actually implement this
-        actorID = rawName;
-        displayName = rawName;
-        dialogueType = DialogueType.Speech;
-    }
-
-    // TODO define this base off a config instead.
-    private static Dictionary<string, TextAttribute.Type> kAttribDef =
-        new Dictionary<string, TextAttribute.Type>
-        {
-            { "shake", TextAttribute.Type.Shake },
-        };
-    private const char kOpeningBracket = '<';
-    private const char kClosingBracket = '>';
-
-    // TODO support callbacks/triggers
-    private static void ParseLine(string rawLine, out string trimmedLine, out TextAttribute[] attribs)
-    {
-        trimmedLine = rawLine;
-
-        string lineCopy = string.Copy(rawLine);
-        int removedCount = 0;
-        Stack<TextAttribute> stack = new Stack<TextAttribute>();
-        List<TextAttribute> textAttributes = new List<TextAttribute>();
-
-        for (int i = 0; i < lineCopy.Length; i++)
-        {
-            bool found = FindStartingEndingIndex(
-                lineCopy, i, kOpeningBracket, kClosingBracket,
-                out string modifier, out int length, out bool isOpening);
-            if (!found) continue;
-
-            TextAttribute.Type type = TextAttribute.Type.None;
-            if (kAttribDef.ContainsKey(modifier))
-                type = kAttribDef[modifier];
-            else
+            int indexOfColon = rawText.IndexOf(':');
+            if (indexOfColon != -1)
             {
-                Debug.LogErrorFormat("unkown attribute named: {0}", modifier);
-                // TODO: figure out if we exit here
-            }
+                rawName = rawText.Substring(0, indexOfColon);
+                rawName = RemoveLeadingTrailingWhiteSpace(rawName);
 
-            if (isOpening)
-            {
-                stack.Push(new TextAttribute
-                {
-                    ModType = type,
-                    StartingIndex = i - removedCount,
-                });
+                rawLine = rawText.Substring(indexOfColon + 1, rawText.Length - indexOfColon - 1);
+                rawLine = RemoveLeadingTrailingWhiteSpace(rawLine);
             }
             else
             {
-                TextAttribute peek = stack.Peek();
-                if (type != peek.ModType)
+                rawLine = rawText;
+                rawLine = RemoveLeadingTrailingWhiteSpace(rawLine);
+            }
+        }
+
+        private static void ParseName(
+            string rawName, out string displayName, out string actorID, out DialogueType dialogueType)
+        {
+            // TODO: design a way to distinguish this
+            // TODO: then actually implement this
+            actorID = rawName;
+            displayName = rawName;
+            dialogueType = DialogueType.Speech;
+        }
+
+
+
+        // TODO support callbacks/triggers
+        private static void ParseLine(string rawLine, out string trimmedLine, out TextAttribute[] attribs)
+        {
+            trimmedLine = rawLine;
+
+            string lineCopy = string.Copy(rawLine);
+            int removedCount = 0;
+            Stack<TextAttribute> stack = new Stack<TextAttribute>();
+            List<TextAttribute> textAttributes = new List<TextAttribute>();
+
+            for (int i = 0; i < lineCopy.Length; i++)
+            {
+                bool found = FindStartingEndingIndex(
+                    lineCopy, i, Constants.OpeningBracket, Constants.ClosingBracket,
+                    out string modifier, out int length, out bool isOpening);
+                if (!found) continue;
+
+                TextAttribute.Type type = TextAttribute.Type.None;
+                if (Constants.AttribDef.ContainsKey(modifier))
+                    type = Constants.AttribDef[modifier];
+                else
                 {
-                    Debug.LogErrorFormat("mis-matched modifiers <{0}> </{1}>", peek.ModType, type);
-                    // TODO: figure out how to handle this error
+                    Debug.LogErrorFormat("unkown attribute named: {0}", modifier);
+                    // TODO: figure out if we exit here
                 }
 
-                // Move from stack to list once we know the length.
-                textAttributes.Add(new TextAttribute
+                if (isOpening)
                 {
-                    ModType = type,
-                    StartingIndex = peek.StartingIndex,
-                    Length = i - peek.StartingIndex - removedCount
-                });
-                stack.Pop();
+                    stack.Push(new TextAttribute
+                    {
+                        ModType = type,
+                        StartingIndex = i - removedCount,
+                    });
+                }
+                else
+                {
+                    TextAttribute peek = stack.Peek();
+                    if (type != peek.ModType)
+                    {
+                        Debug.LogErrorFormat("mis-matched modifiers <{0}> </{1}>", peek.ModType, type);
+                        // TODO: figure out how to handle this error
+                    }
+
+                    // Move from stack to list once we know the length.
+                    textAttributes.Add(new TextAttribute
+                    {
+                        ModType = type,
+                        StartingIndex = peek.StartingIndex,
+                        Length = i - peek.StartingIndex - removedCount
+                    });
+                    stack.Pop();
+                }
+
+                // Trim string
+                var countToRemove = 2 + modifier.Length + (isOpening ? 0 : 1);
+                trimmedLine = trimmedLine.Remove(i - removedCount, countToRemove);
+                removedCount += countToRemove;
+                i += length;
             }
 
-            // Trim string
-            var countToRemove = 2 + modifier.Length + (isOpening ? 0 : 1);
-            trimmedLine = trimmedLine.Remove(i - removedCount, countToRemove);
-            removedCount += countToRemove;
-            i += length;
+            attribs = textAttributes.ToArray();
         }
 
-        attribs = textAttributes.ToArray();
-    }
+        // TODO: trim trailing/leading whitespace if it's an issue
 
-    // TODO: trim trailing/leading whitespace if it's an issue
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="line">The line to analyze.</param>
-    /// <param name="index">Index to start searching from.</param>
-    /// <param name="startingBracket">Starting character.</param>
-    /// <param name="endingBracket">Ending character.</param>
-    /// <param name="modifier">The text of the modifier.</param>
-    /// <param name="length">Length of the bracket.</param>
-    /// <param name="isOpening">Whether this is an opening or ending bracket.</param>
-    /// <returns>Whether a starting-ending bracket was found.</returns>
-    private static bool FindStartingEndingIndex(string line, int index, char startingBracket, char endingBracket,
-        out string modifier, out int length, out bool isOpening)
-    {
-        length = -1;
-        isOpening = false;
-        modifier = "";
-
-        if (index < 0 || index >= line.Length)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line">The line to analyze.</param>
+        /// <param name="index">Index to start searching from.</param>
+        /// <param name="startingBracket">Starting character.</param>
+        /// <param name="endingBracket">Ending character.</param>
+        /// <param name="modifier">The text of the modifier.</param>
+        /// <param name="length">Length of the bracket.</param>
+        /// <param name="isOpening">Whether this is an opening or ending bracket.</param>
+        /// <returns>Whether a starting-ending bracket was found.</returns>
+        private static bool FindStartingEndingIndex(string line, int index, char startingBracket, char endingBracket,
+            out string modifier, out int length, out bool isOpening)
         {
-            Debug.LogErrorFormat("invalid index {0} for line {1}", index, line);
-            return false;
-        }
+            length = -1;
+            isOpening = false;
+            modifier = "";
 
-        char c = line[index];
-        if (c != startingBracket)
-        {
-            return false;
-        }
-
-        int endingIndex = line.IndexOf(endingBracket, index + 1);
-        if (endingIndex == -1)
-        {
-            Debug.LogErrorFormat("found opening bracket, but could not find closing bracket ({0})", line);
-            return false;
-        }
-
-        isOpening = line[index + 1] != '/'; // if it's <test> or </test>
-
-        length = endingIndex - index - (isOpening ? 0 : 1);
-        int startingIndex = index + (isOpening ? 1 : 2);
-        modifier = line.Substring(startingIndex, length - 1);
-
-        // Remove all white space.
-        // if (modifier.Contains(" "))
-        //    modifier = modifier.Replace(" ", "");
-
-        return true;
-    }
-
-    private static HashSet<char> kSpaceChars = new HashSet<char> {
-        ' ', '\t'
-    };
-
-    /// <summary>
-    /// Removes trailing and leading white space from a string.
-    /// </summary>
-    /// <param name="text">Text to trim.</param>
-    /// <returns>Trimmed version of the string.</returns>
-    private static string RemoveLeadingTrailingWhiteSpace(string text)
-    {
-        int removeCount = 0;
-        for (int i = 0; i < text.Length; i++)
-        {
-            if (kSpaceChars.Contains(text[i])) {
-                removeCount++;
-            } else {
-                break;
+            if (index < 0 || index >= line.Length)
+            {
+                Debug.LogErrorFormat("invalid index {0} for line {1}", index, line);
+                return false;
             }
-        }
 
-        if (removeCount == text.Length)
-            return "";
-
-        if (removeCount > 0)
-            text = text.Substring(removeCount);
-
-        removeCount = 0;
-        for (int i = text.Length - 1; i >= 0; i--)
-        {
-            if (kSpaceChars.Contains(text[i])) {
-                removeCount++;
-            } else {
-                break;
+            char c = line[index];
+            if (c != startingBracket)
+            {
+                return false;
             }
+
+            int endingIndex = line.IndexOf(endingBracket, index + 1);
+            if (endingIndex == -1)
+            {
+                Debug.LogErrorFormat("found opening bracket, but could not find closing bracket ({0})", line);
+                return false;
+            }
+
+            isOpening = line[index + 1] != '/'; // if it's <test> or </test>
+
+            length = endingIndex - index - (isOpening ? 0 : 1);
+            int startingIndex = index + (isOpening ? 1 : 2);
+            modifier = line.Substring(startingIndex, length - 1);
+
+            // Remove all white space.
+            // if (modifier.Contains(" "))
+            //    modifier = modifier.Replace(" ", "");
+
+            return true;
         }
 
-        if (removeCount > 0)
-            text = text.Substring(0, text.Length - removeCount);
+        /// <summary>
+        /// Removes trailing and leading white space from a string.
+        /// </summary>
+        /// <param name="text">Text to trim.</param>
+        /// <returns>Trimmed version of the string.</returns>
+        private static string RemoveLeadingTrailingWhiteSpace(string text)
+        {
+            int removeCount = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (Constants.Space.Contains(text[i]))
+                {
+                    removeCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
 
-        return text;
+            if (removeCount == text.Length)
+                return "";
+
+            if (removeCount > 0)
+                text = text.Substring(removeCount);
+
+            removeCount = 0;
+            for (int i = text.Length - 1; i >= 0; i--)
+            {
+                if (Constants.Space.Contains(text[i]))
+                {
+                    removeCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (removeCount > 0)
+                text = text.Substring(0, text.Length - removeCount);
+
+            return text;
+        }
     }
 }

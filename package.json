@@ -6,6 +6,7 @@
   "hideInEditor": false,
   "dependencies": {
     "com.dbrizov.naughtyattributes": "2.0.8",
-    "dev.yarnspinner.unity": "1.2.7"
+    "dev.yarnspinner.unity": "1.2.7",
+    "com.chartweener": "0.0.1"
   }
 }
