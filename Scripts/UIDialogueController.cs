@@ -54,21 +54,30 @@ namespace UI
 
         void OnDialogueStart()
         {
+            m_completeDialogueAction.action.Enable();
             DisplayUI(true);
         }
 
         void OnDialogueUpdate(ParsedDialogue dialogue, UnityAction dialogueCompletedCb)
         {
+            m_completedText = false;
             // TODO: filter between main dialogue and background dialogue
 
             // Set name if it was provided.
             if (dialogue.DisplayName != "")
                 m_uiNameView.SetName(dialogue.DisplayName);
 
-            Actor actor = m_actorManager.GetActor(dialogue.ActorID);
-            if (actor != null)
+            if (dialogue.ActorID != "")
             {
-                m_uiDialogueView.SetActor(actor);
+                Actor actor = m_actorManager.GetActor(dialogue.ActorID);
+                if (actor != null)
+                {
+                    m_uiDialogueView.SetActor(actor);
+                }
+                else
+                {
+                    Debug.LogErrorFormat("Unable to find actor with ID: {0}", dialogue.ActorID);
+                }
             }
 
             m_uiDialogueView.Clear();
@@ -84,12 +93,14 @@ namespace UI
 
         void OnDialogueEnd()
         {
+            m_completeDialogueAction.action.Disable();
             DisplayUI(false);
         }
 
         void DisplayUI(bool shouldShow)
         {
-
+            m_uiNameView.SetVisible(shouldShow);
+            m_uiDialogueView.SetVisible(shouldShow);
         }
     }
 }

@@ -8,11 +8,8 @@ using System.Text;
 using UnityEngine.Events;
 using Dialogue;
 
-public class UIDialogueView : MonoBehaviour
+public class UIDialogueView : UIView
 {
-    [SerializeField]
-    TextMeshProUGUI m_nameText = null;
-
     [SerializeField]
     Animator m_animator = null;
     [SerializeField]
@@ -21,7 +18,7 @@ public class UIDialogueView : MonoBehaviour
     const float kFadeDuration = 0.05f;
     const float kLocalMoveYFromPos = 3.0f;
     const float kPunctuationPauseSec = 0.2f;
-    const float kDefaultTextInterval = 0.1f;
+    const float kDefaultTextInterval = 0.01f;
 
     TextMeshProUGUI m_text = null;
     CharTweener m_charTweener = null;
@@ -30,7 +27,7 @@ public class UIDialogueView : MonoBehaviour
     List<Tweener> m_modifiers = null;
     Actor m_talkingActor = null;
     List<DialogueCallbacks> m_callbacks = null;
-    RectTransform m_parent = null;
+    RectTransform m_rectTransform = null;
 
     public void Clear()
     {
@@ -42,16 +39,19 @@ public class UIDialogueView : MonoBehaviour
     public void SetActor(Actor actor)
     {
         m_talkingActor = actor;
-
-        if (m_talkingActor == null) return;
-
         MoveTo(actor);
     }
 
     protected virtual void MoveTo(Actor actor)
     {
-        m_parent.anchoredPosition =
+        m_rectTransform.anchoredPosition =
             UI.Utils.ConvertWorldPosToCanvasPos(actor.GetDialogueAnchor());
+    }
+
+    public override void SetVisible(bool shouldShow)
+    {
+        if (!shouldShow) m_text.text = "";
+        base.SetVisible(shouldShow);
     }
 
     public void DisplayText(string text, UnityAction onLineDisplayedCb = null)
@@ -196,14 +196,13 @@ public class UIDialogueView : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        TryGetComponent(out m_text);
+        m_text = GetComponentInChildren<TextMeshProUGUI>();
         m_charTweener = m_text.GetCharTweener();
         m_modifiers = new List<Tweener>();
     }
 
     void Start()
     {
-        transform.parent.TryGetComponent(out m_parent);
-        // m_audioManager = AudioManager.Instance;
+        TryGetComponent(out m_rectTransform);
     }
 }

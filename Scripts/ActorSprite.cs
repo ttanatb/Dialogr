@@ -59,6 +59,7 @@ namespace Dialogue
         {
             // Make sure to cache the bound calculation
             RecalculateBounds();
+            base.Start();
         }
     }
 }

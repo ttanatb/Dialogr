@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class UINameView : MonoBehaviour
+public class UINameView : UIView
 {
     TextMeshProUGUI m_nameText = null;
 
@@ -17,5 +17,11 @@ public class UINameView : MonoBehaviour
     {
         if (m_nameText == null)
             TryGetComponent(out m_nameText);
+    }
+
+    public override void SetVisible(bool shouldShow)
+    {
+        if (!shouldShow) m_nameText.text = "";
+        base.SetVisible(shouldShow);
     }
 }

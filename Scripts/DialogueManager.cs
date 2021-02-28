@@ -36,7 +36,7 @@ namespace Dialogue
 
                 m_mainDialogueUI.onLineUpdate.AddListener(OnLineUpdate);
                 m_mainDialogueUI.onDialogueStart.AddListener(OnDialogueStarted);
-                m_mainDialogueUI.onDialogueEnd.AddListener(OnDialogueStarted);
+                m_mainDialogueUI.onDialogueEnd.AddListener(OnDialogueEnded);
             }
         }
 

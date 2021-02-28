@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Dialogue
 {
-    public class Parser : MonoBehaviour
+    public class Parser
     {
         public static ParsedDialogue Parse(string rawText)
         {
