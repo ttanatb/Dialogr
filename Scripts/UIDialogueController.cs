@@ -16,6 +16,7 @@ namespace UI
         [SerializeField]
         InputActionReference m_completeDialogueAction = null;
 
+        ActorManager m_actorManager = null;
         DialogueManager m_dialogueManager = null;
         bool m_completedText = false;
         UnityAction m_dialogueCompletedCb = null;
@@ -33,6 +34,7 @@ namespace UI
         void Start()
         {
             m_dialogueManager = DialogueManager.Instance;
+            m_actorManager = ActorManager.Instance;
 
             m_dialogueManager.OnDialogueStart.AddListener(OnDialogueStart);
             m_dialogueManager.OnDialogueUpdate.AddListener(OnDialogueUpdate);
@@ -63,7 +65,11 @@ namespace UI
             if (dialogue.DisplayName != "")
                 m_uiNameView.SetName(dialogue.DisplayName);
 
-            // TODO: Get who's talking. based on dialogue.ActorID
+            Actor actor = m_actorManager.GetActor(dialogue.ActorID);
+            if (actor != null)
+            {
+                m_uiDialogueView.SetActor(actor);
+            }
 
             m_uiDialogueView.Clear();
             m_uiDialogueView.SetTextModifier(dialogue.Attributes);

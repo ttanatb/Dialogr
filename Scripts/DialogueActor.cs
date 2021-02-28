@@ -7,23 +7,31 @@ namespace Dialogue
     public class Actor : MonoBehaviour
     {
         [SerializeField]
-        private Animator m_animator = null;
+        protected Animator m_animator = null;
 
         [SerializeField]
-        private string m_isTalkingAnimParm = "";
+        protected string m_isTalkingAnimParm = "";
 
         [SerializeField]
-        private string[] m_aliases = null;
+        protected string[] m_aliases = null;
 
-        public void SetTalking(bool isTalking)
+        [SerializeField]
+        protected Vector3 m_anchorOffset = Vector3.zero;
+
+        public virtual void SetTalking(bool isTalking)
         {
             m_animator.SetBool(m_isTalkingAnimParm, isTalking);
         }
 
-        private void Start()
+        protected virtual void Start()
         {
             // Should characters self-add like this? who knows
-            // CharacterManager.Instance.AddCharacter(m_aliases, this);
+            ActorManager.Instance.AddActor(m_aliases, this);
+        }
+
+        public virtual Vector3 GetDialogueAnchor()
+        {
+            return transform.position + m_anchorOffset;
         }
     }
 }

@@ -13,12 +13,15 @@ public class UIDialogueView : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_nameText = null;
 
+    [SerializeField]
+    Animator m_animator = null;
+    [SerializeField]
+    string m_animParamShowTicker = "";
+
     const float kFadeDuration = 0.05f;
     const float kLocalMoveYFromPos = 3.0f;
     const float kPunctuationPauseSec = 0.2f;
-
     const float kDefaultTextInterval = 0.1f;
-
 
     TextMeshProUGUI m_text = null;
     CharTweener m_charTweener = null;
@@ -27,6 +30,7 @@ public class UIDialogueView : MonoBehaviour
     List<Tweener> m_modifiers = null;
     Actor m_talkingActor = null;
     List<DialogueCallbacks> m_callbacks = null;
+    RectTransform m_parent = null;
 
     public void Clear()
     {
@@ -38,6 +42,16 @@ public class UIDialogueView : MonoBehaviour
     public void SetActor(Actor actor)
     {
         m_talkingActor = actor;
+
+        if (m_talkingActor == null) return;
+
+        MoveTo(actor);
+    }
+
+    protected virtual void MoveTo(Actor actor)
+    {
+        m_parent.anchoredPosition =
+            UI.Utils.ConvertWorldPosToCanvasPos(actor.GetDialogueAnchor());
     }
 
     public void DisplayText(string text, UnityAction onLineDisplayedCb = null)
@@ -136,7 +150,7 @@ public class UIDialogueView : MonoBehaviour
 
     public void ShowBlinker(bool shouldShow)
     {
-
+        m_animator.SetBool(m_animParamShowTicker, shouldShow);
     }
 
     private void ShakeTextAt(int startingIndex, int count)
@@ -189,6 +203,7 @@ public class UIDialogueView : MonoBehaviour
 
     void Start()
     {
+        transform.parent.TryGetComponent(out m_parent);
         // m_audioManager = AudioManager.Instance;
     }
 }
