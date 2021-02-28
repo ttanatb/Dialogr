@@ -14,6 +14,7 @@ namespace Dialogue
     {
         // TODO: add background dialogue UIs
 
+        [SerializeField]
         private Yarn.Unity.DialogueUI m_mainDialogueUI = null;
         public Yarn.Unity.DialogueUI MainDialogueUI
         {
@@ -31,6 +32,8 @@ namespace Dialogue
                 }
 
                 m_mainDialogueUI = value;
+                if (m_mainDialogueUI == null) return;
+
                 m_mainDialogueUI.onLineUpdate.AddListener(OnLineUpdate);
                 m_mainDialogueUI.onDialogueStart.AddListener(OnDialogueStarted);
                 m_mainDialogueUI.onDialogueEnd.AddListener(OnDialogueStarted);
@@ -53,6 +56,12 @@ namespace Dialogue
         public UnityEvent OnDialogueEnd
         {
             get { return m_onDialogueEnd; }
+        }
+
+        private void Start()
+        {
+            // Run all the on set code
+            MainDialogueUI = m_mainDialogueUI;
         }
 
         void OnDialogueStarted()
