@@ -1,11 +1,11 @@
 {
-  "name": "com.tanatb.dialgoue.manager",
+  "name": "com.tanatb.dialogr",
   "version": "0.0.1",
-  "displayName": "DialogueManager",
+  "displayName": "Dialogr",
   "type": "tool",
   "hideInEditor": false,
   "dependencies": {
-    "com.dbrizov.naughtyattributes": "2.0.8",
     "dev.yarnspinner.unity": "1.2.7"
-  }
+  },
+  "description": "Dialogue System built with Yarn & CharTweener to provide y'all with the spice of life."
 }
