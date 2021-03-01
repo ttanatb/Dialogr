@@ -16,6 +16,7 @@ namespace Dialogue
 
         [SerializeField]
         private Yarn.Unity.DialogueUI m_mainDialogueUI = null;
+        UnityAction<string> m_onLineUpdateAction = null;
         public Yarn.Unity.DialogueUI MainDialogueUI
         {
             get
@@ -26,17 +27,13 @@ namespace Dialogue
             {
                 if (m_mainDialogueUI != null)
                 {
-                    m_mainDialogueUI.onLineUpdate.RemoveListener(OnLineUpdate);
-                    m_mainDialogueUI.onDialogueStart.RemoveListener(OnDialogueStarted);
-                    m_mainDialogueUI.onDialogueEnd.RemoveListener(OnDialogueEnded);
+                    RemoveListeners(m_mainDialogueUI);
                 }
 
                 m_mainDialogueUI = value;
                 if (m_mainDialogueUI == null) return;
 
-                m_mainDialogueUI.onLineUpdate.AddListener(OnLineUpdate);
-                m_mainDialogueUI.onDialogueStart.AddListener(OnDialogueStarted);
-                m_mainDialogueUI.onDialogueEnd.AddListener(OnDialogueEnded);
+                RegisterListeners(m_mainDialogueUI);
             }
         }
 
@@ -58,10 +55,31 @@ namespace Dialogue
             get { return m_onDialogueEnd; }
         }
 
+        private void RegisterListeners(Yarn.Unity.DialogueUI dialogueUI)
+        {
+            m_onLineUpdateAction = (line) => { OnLineUpdate(line, dialogueUI); };
+            dialogueUI.onLineUpdate.AddListener(m_onLineUpdateAction);
+            dialogueUI.onDialogueStart.AddListener(OnDialogueStarted);
+            dialogueUI.onDialogueEnd.AddListener(OnDialogueEnded);
+        }
+
+        private void RemoveListeners(Yarn.Unity.DialogueUI dialogueUI)
+        {
+            dialogueUI.onLineUpdate.RemoveListener(m_onLineUpdateAction);
+            dialogueUI.onDialogueStart.RemoveListener(OnDialogueStarted);
+            dialogueUI.onDialogueEnd.RemoveListener(OnDialogueEnded);
+        }
+
         private void Start()
         {
             // Run all the on set code
-            MainDialogueUI = m_mainDialogueUI;
+            RegisterListeners(m_mainDialogueUI);
+        }
+
+        private void OnDestroy()
+        {
+            if (m_mainDialogueUI != null)
+                RemoveListeners(m_mainDialogueUI);
         }
 
         void OnDialogueStarted()
@@ -74,14 +92,14 @@ namespace Dialogue
             m_onDialogueEnd.Invoke();
         }
 
-        void OnLineUpdate(string line)
+        void OnLineUpdate(string line, Yarn.Unity.DialogueUI dialogueUI)
         {
-            // TODO: make this work background dialogue UI
             ParsedDialogue parsedDialogue = Parser.Parse(line);
+            Yarn.Unity.DialogueUI dialogue = dialogueUI;
             m_onDialogueUpdate.Invoke(parsedDialogue,
             /*onLineCompletedCb=*/ () =>
              {
-                 m_mainDialogueUI.MarkLineComplete();
+                 dialogue.MarkLineComplete();
              });
         }
     }

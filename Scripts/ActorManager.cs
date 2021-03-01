@@ -56,5 +56,15 @@ namespace Dialogue
             a = m_IDtoActor[id];
             return a;
         }
+
+        public void RemoveActor(IEnumerable<string> aliases) 
+        {
+            foreach (var alias in aliases)
+            {
+                var id = m_aliasToID[alias];
+                m_IDtoActor.Remove(id);
+                m_aliasToID.Remove(alias);
+            }
+        }
     }
 }

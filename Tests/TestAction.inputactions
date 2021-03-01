@@ -1,0 +1,33 @@
+{
+    "name": "TestAction",
+    "maps": [
+        {
+            "name": "TestMap",
+            "id": "bf651779-e9ed-4784-ad93-880cdb34c00a",
+            "actions": [
+                {
+                    "name": "TestAction",
+                    "type": "Button",
+                    "id": "154e9001-46cf-4aec-bdaa-e65744325bf9",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Press"
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "3e9af41f-58c6-475f-834f-d6d342d67741",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "TestAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

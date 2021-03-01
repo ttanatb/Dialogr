@@ -201,6 +201,11 @@ public class UIDialogueView : UIView
         m_modifiers = new List<Tweener>();
     }
 
+    private void OnDestroy()
+    {
+        m_onLineDisplayedCb = null;
+    }
+
     void Start()
     {
         TryGetComponent(out m_rectTransform);

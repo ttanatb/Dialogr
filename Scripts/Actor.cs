@@ -15,8 +15,15 @@ namespace Dialogue
         [SerializeField]
         protected string[] m_aliases = null;
 
+        public string[] Aliases {
+            get {return m_aliases;}
+            set { m_aliases = value;}
+        }
+
         [SerializeField]
         protected Vector3 m_anchorOffset = Vector3.zero;
+
+        protected ActorManager m_actorManager = null;
 
         public virtual void SetTalking(bool isTalking)
         {
@@ -26,12 +33,17 @@ namespace Dialogue
         protected virtual void Start()
         {
             // Should characters self-add like this? who knows
-            ActorManager.Instance.AddActor(m_aliases, this);
+            m_actorManager = ActorManager.Instance;
+            m_actorManager.AddActor(m_aliases, this);
         }
 
         public virtual Vector3 GetDialogueAnchor()
         {
             return transform.position + m_anchorOffset;
+        }
+
+        private void OnDestroy() {
+            m_actorManager.RemoveActor(m_aliases);
         }
     }
 }

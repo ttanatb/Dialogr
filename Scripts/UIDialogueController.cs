@@ -9,9 +9,7 @@ namespace UI
 {
     public class UIDialogueController : MonoBehaviour
     {
-        [SerializeField]
         UINameView m_uiNameView = null;
-        [SerializeField]
         UIDialogueView m_uiDialogueView = null;
         [SerializeField]
         InputActionReference m_completeDialogueAction = null;
@@ -41,6 +39,9 @@ namespace UI
             m_dialogueManager.OnDialogueEnd.AddListener(OnDialogueEnd);
 
             m_completeDialogueAction.action.performed += TriggerNextDialogue;
+
+            m_uiNameView = GetComponentInChildren<UINameView>();
+            m_uiDialogueView = GetComponentInChildren<UIDialogueView>();
         }
 
         private void OnDestroy()
