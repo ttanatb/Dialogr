@@ -5,7 +5,8 @@
   "type": "tool",
   "hideInEditor": false,
   "dependencies": {
-    "dev.yarnspinner.unity": "1.2.7"
+    "dev.yarnspinner.unity": "1.2.7",
+    "com.tanatb.utilr": "1.2.7"
   },
   "description": "Dialogue System built with Yarn & CharTweener to provide y'all with the spice of life."
 }

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-
+using Utilr;
 
 namespace Dialogue
 {
@@ -15,8 +15,8 @@ namespace Dialogue
         // TODO: add background dialogue UIs
 
         [SerializeField]
-        private Yarn.Unity.DialogueUI m_mainDialogueUI = null;
-        UnityAction<string> m_onLineUpdateAction = null;
+        protected Yarn.Unity.DialogueUI m_mainDialogueUI = null;
+        protected UnityAction<string> m_onLineUpdateAction = null;
         public Yarn.Unity.DialogueUI MainDialogueUI
         {
             get
@@ -37,25 +37,25 @@ namespace Dialogue
             }
         }
 
-        private DialogueUnityEvent m_onDialogueUpdate = new DialogueUnityEvent();
+        protected DialogueUnityEvent m_onDialogueUpdate = new DialogueUnityEvent();
         public DialogueUnityEvent OnDialogueUpdate
         {
             get { return m_onDialogueUpdate; }
         }
 
-        private UnityEvent m_onDialogueStart = new UnityEvent();
+        protected UnityEvent m_onDialogueStart = new UnityEvent();
         public UnityEvent OnDialogueStart
         {
             get { return m_onDialogueStart; }
         }
 
-        private UnityEvent m_onDialogueEnd = new UnityEvent();
+        protected UnityEvent m_onDialogueEnd = new UnityEvent();
         public UnityEvent OnDialogueEnd
         {
             get { return m_onDialogueEnd; }
         }
 
-        private void RegisterListeners(Yarn.Unity.DialogueUI dialogueUI)
+        protected void RegisterListeners(Yarn.Unity.DialogueUI dialogueUI)
         {
             m_onLineUpdateAction = (line) => { OnLineUpdate(line, dialogueUI); };
             dialogueUI.onLineUpdate.AddListener(m_onLineUpdateAction);
@@ -63,36 +63,36 @@ namespace Dialogue
             dialogueUI.onDialogueEnd.AddListener(OnDialogueEnded);
         }
 
-        private void RemoveListeners(Yarn.Unity.DialogueUI dialogueUI)
+        protected void RemoveListeners(Yarn.Unity.DialogueUI dialogueUI)
         {
             dialogueUI.onLineUpdate.RemoveListener(m_onLineUpdateAction);
             dialogueUI.onDialogueStart.RemoveListener(OnDialogueStarted);
             dialogueUI.onDialogueEnd.RemoveListener(OnDialogueEnded);
         }
 
-        private void Start()
+        protected void Start()
         {
             // Run all the on set code
             RegisterListeners(m_mainDialogueUI);
         }
 
-        private void OnDestroy()
+        protected void OnDestroy()
         {
             if (m_mainDialogueUI != null)
                 RemoveListeners(m_mainDialogueUI);
         }
 
-        void OnDialogueStarted()
+        protected void OnDialogueStarted()
         {
             m_onDialogueStart.Invoke();
         }
 
-        void OnDialogueEnded()
+        protected void OnDialogueEnded()
         {
             m_onDialogueEnd.Invoke();
         }
 
-        void OnLineUpdate(string line, Yarn.Unity.DialogueUI dialogueUI)
+        protected void OnLineUpdate(string line, Yarn.Unity.DialogueUI dialogueUI)
         {
             ParsedDialogue parsedDialogue = Parser.Parse(line);
             Yarn.Unity.DialogueUI dialogue = dialogueUI;
