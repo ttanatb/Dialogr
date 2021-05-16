@@ -7,7 +7,6 @@ public class UINameView : UIView
 {
     TextMeshProUGUI m_nameText = null;
 
-
     public void SetName(string name)
     {
         m_nameText.text = name;

@@ -6,7 +6,7 @@ using CharTween;
 using DG.Tweening;
 using System.Text;
 using UnityEngine.Events;
-using Dialogue;
+using Dialogr;
 
 public class UIDialogueView : UIView
 {

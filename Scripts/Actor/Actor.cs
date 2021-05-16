@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Dialogue
+namespace Dialogr
 {
     public class Actor : MonoBehaviour
     {
@@ -15,9 +15,10 @@ namespace Dialogue
         [SerializeField]
         protected string[] m_aliases = null;
 
-        public string[] Aliases {
-            get {return m_aliases;}
-            set { m_aliases = value;}
+        public string[] Aliases
+        {
+            get { return m_aliases; }
+            set { m_aliases = value; }
         }
 
         [SerializeField]
@@ -42,7 +43,8 @@ namespace Dialogue
             return transform.position + m_anchorOffset;
         }
 
-        private void OnDestroy() {
+        private void OnDestroy()
+        {
             m_actorManager.RemoveActor(m_aliases);
         }
     }

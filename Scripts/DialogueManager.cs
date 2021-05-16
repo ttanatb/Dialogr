@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using Utilr;
 
-namespace Dialogue
+namespace Dialogr
 {
     public class DialogueUnityEvent : UnityEvent<ParsedDialogue, UnityAction>
     {

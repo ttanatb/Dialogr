@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Text;
 
-namespace Dialogue
+namespace Dialogr
 {
     public struct TextAttribute
     {

@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-namespace Dialogue
+
+namespace Dialogr
 {
     public class ActorSprite : Actor
     {

@@ -2,7 +2,7 @@
 using UnityEngine.Events;
 using System.Collections.Generic;
 using UnityEngine;
-using Dialogue;
+using Dialogr;
 using UnityEngine.InputSystem;
 
 namespace UI

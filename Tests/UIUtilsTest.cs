@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using TMPro;
 using UnityEngine.UI;
-using Dialogue;
+using Dialogr;
 
 namespace Tests
 {

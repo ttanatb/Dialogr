@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Utilr;
 
-namespace Dialogue
+namespace Dialogr
 {
     public class ActorManager : Singleton<ActorManager>
     {
@@ -58,7 +58,7 @@ namespace Dialogue
             return a;
         }
 
-        public void RemoveActor(IEnumerable<string> aliases) 
+        public void RemoveActor(IEnumerable<string> aliases)
         {
             foreach (var alias in aliases)
             {

@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using TMPro;
 using UnityEngine.UI;
-using Dialogue;
+using Dialogr;
 
 namespace Tests
 {
@@ -38,7 +38,7 @@ namespace Tests
             gameObject.TryGetComponent(out name);
             gameObject.TryGetComponent(out img);
             textObj.TryGetComponent(out text);
-            child.TryGetComponent(out childImg); 
+            child.TryGetComponent(out childImg);
         }
 
 

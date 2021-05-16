@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Dialogue
+namespace Dialogr
 {
     public class Constants
     {

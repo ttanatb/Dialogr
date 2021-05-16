@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using TMPro;
-using Dialogue;
+using Dialogr;
 using UnityEngine.TestTools.Utils;
 
 namespace Tests
