@@ -59,31 +59,30 @@ namespace UI
             DisplayUI(true);
         }
 
-        void OnDialogueUpdate(ParsedDialogue dialogue, UnityAction dialogueCompletedCb)
+        void OnDialogueUpdate(DialogueModel model, UnityAction dialogueCompletedCb)
         {
             m_completedText = false;
             // TODO: filter between main dialogue and background dialogue
 
             // Set name if it was provided.
-            if (dialogue.DisplayName != "")
-                m_uiNameView.SetName(dialogue.DisplayName);
+            if (model.DisplayName != "")
+                m_uiNameView.SetName(model.DisplayName);
 
-            if (dialogue.ActorID != "")
+            if (model.ActorID != "")
             {
-                Actor actor = m_actorManager.GetActor(dialogue.ActorID);
+                Actor actor = m_actorManager.GetActor(model.ActorID);
                 if (actor != null)
                 {
                     m_uiDialogueView.SetActor(actor);
                 }
                 else
                 {
-                    Debug.LogErrorFormat("Unable to find actor with ID: {0}", dialogue.ActorID);
+                    Debug.LogErrorFormat("Unable to find actor with ID: {0}", model.ActorID);
                 }
             }
 
             m_uiDialogueView.Clear();
-            m_uiDialogueView.SetTextModifier(dialogue.Attributes);
-            m_uiDialogueView.DisplayText(dialogue.Line, /*onLineDisplayedCb=*/ () =>
+            m_uiDialogueView.DisplayText(model, /*onLineDisplayedCb=*/ () =>
             {
                 m_completedText = true;
                 m_uiDialogueView.ShowBlinker(true);

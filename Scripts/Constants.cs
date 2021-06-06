@@ -12,12 +12,14 @@ namespace Dialogr
             new HashSet<string> { "shake" };
 
         // TODO define this base off a config instead.
-        public static readonly Dictionary<string, TextAttribute.Type> AttribDef =
-            new Dictionary<string, TextAttribute.Type>
-            {
-            { "shake", TextAttribute.Type.Shake },
-            };
+        // public static readonly Dictionary<string, TextModifier.Type> AttribDef =
+        //     new Dictionary<string, TextModifier.Type>
+        //     {
+        //     { "shake", TextModifier.Type.Shake },
+        //     };
         public static readonly char OpeningBracket = '<';
         public static readonly char ClosingBracket = '>';
+        public static readonly char ClosingIdentifier = '/';
+        public static readonly char ActorIdentifier = ',';
     }
 }

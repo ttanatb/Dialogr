@@ -6,8 +6,11 @@ using Utilr;
 
 namespace Dialogr
 {
-    public class DialogueUnityEvent : UnityEvent<ParsedDialogue, UnityAction>
+    [System.Serializable]
+    public struct ActorCommand
     {
+        public string ActorID;
+        public string CommandText;
     }
 
     public class DialogueManager : Singleton<DialogueManager>
@@ -55,6 +58,10 @@ namespace Dialogr
             get { return m_onDialogueEnd; }
         }
 
+        protected HashSet<string> m_registeredTextModifiers = new HashSet<string>();
+
+        protected Dictionary<ActorCommand, System.Action<string[]>> m_registeredDialogueTriggers = new Dictionary<ActorCommand, System.Action<string[]>>();
+
         protected void RegisterListeners(Yarn.Unity.DialogueUI dialogueUI)
         {
             m_onLineUpdateAction = (line) => { OnLineUpdate(line, dialogueUI); };
@@ -92,11 +99,103 @@ namespace Dialogr
             m_onDialogueEnd.Invoke();
         }
 
+        public void RegisterTextModifiers(string[] commandIDs)
+        {
+            foreach (var id in commandIDs)
+                m_registeredTextModifiers.Add(id);
+        }
+
+        public void RegisterTextModifier(string commandID)
+        {
+            m_registeredTextModifiers.Add(commandID);
+        }
+
+        public void RemoveTextModifiers(string[] commandIDs)
+        {
+            foreach (var id in commandIDs)
+                m_registeredTextModifiers.Remove(id);
+        }
+
+        public void RemoveTextModifier(string commandID)
+        {
+            m_registeredTextModifiers.Remove(commandID);
+        }
+
+        public void RegisterDialogueTrigger(ActorCommand key, System.Action<string[]> value)
+        {
+            m_registeredDialogueTriggers.Add(key, value);
+        }
+
+        public void RemoveDialogueTriggers(ActorCommand[] actorCommands)
+        {
+            foreach (var cmd in actorCommands)
+                m_registeredDialogueTriggers.Remove(cmd);
+        }
+
+        public void RemoveDialogueTrigger(ActorCommand actorCommand)
+        {
+            m_registeredDialogueTriggers.Remove(actorCommand);
+        }
+
         protected void OnLineUpdate(string line, Yarn.Unity.DialogueUI dialogueUI)
         {
             ParsedDialogue parsedDialogue = Parser.Parse(line);
+
+            // parse to modifiers/triggers
+            TextModifier[] modifiers = new TextModifier[parsedDialogue.Triggers.Length];
+            DialogueTrigger[] triggers = new DialogueTrigger[parsedDialogue.Triggers.Length];
+            int j = 0;
+            int k = 0;
+            for (int i = 0; i < modifiers.Length; i++)
+            {
+                var t = parsedDialogue.Triggers[i];
+                var actorCmdPair = new ActorCommand()
+                {
+                    ActorID = t.ActorID,
+                    CommandText = t.CommandText,
+                };
+                // t.CommandText is a DialogueTrigger
+                if (m_registeredDialogueTriggers.ContainsKey(actorCmdPair))
+                {
+                    triggers[k] = new DialogueTrigger()
+                    {
+                        StartingIndex = t.StartingIndex,
+                        Args = t.Args,
+                        Callback = m_registeredDialogueTriggers[actorCmdPair],
+                    };
+                    k++;
+                }
+                else if (m_registeredTextModifiers.Contains(t.CommandText))
+                {
+                    modifiers[j] = new TextModifier()
+                    {
+                        CommandText = t.CommandText,
+                        Args = t.Args,
+                        StartingIndex = t.StartingIndex,
+                        Length = t.Length,
+                    };
+                    j++;
+                }
+                else
+                {
+                    Debug.LogErrorFormat("Unrecognized dialogue trigger: {0}", t.CommandText);
+                }
+            }
+
+            DialogueModel model = new DialogueModel()
+            {
+                ActorID = parsedDialogue.ActorID,
+                DisplayName = parsedDialogue.DisplayName,
+                DialogueType = DialogueType.Speech,
+                Text = parsedDialogue.Line.Text,
+                Modifiers = modifiers,
+                Triggers = triggers,
+                // TODO:
+                // TalkingSFX = 
+            };
+
             Yarn.Unity.DialogueUI dialogue = dialogueUI;
-            m_onDialogueUpdate.Invoke(parsedDialogue,
+            m_onDialogueUpdate.Invoke(model,
             /*onLineCompletedCb=*/ () =>
              {
                  dialogue.MarkLineComplete();

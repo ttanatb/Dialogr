@@ -7,6 +7,10 @@ using DG.Tweening;
 using System.Text;
 using UnityEngine.Events;
 using Dialogr;
+using Audior;
+
+using TextBehaviourAction = System.Action<System.Collections.Generic.List<DG.Tweening.Tweener>, CharTween.CharTweener, int, int, string[]>;
+using DialogueAction = System.Action<string[]>;
 
 public class UIDialogueView : UIView
 {
@@ -26,8 +30,11 @@ public class UIDialogueView : UIView
     UnityAction m_onLineDisplayedCb = null;
     List<Tweener> m_modifiers = null;
     Actor m_talkingActor = null;
-    List<DialogueCallbacks> m_callbacks = null;
+    DialogueTrigger[] m_triggers = null;
     RectTransform m_rectTransform = null;
+    Dictionary<string, TextBehaviourAction> m_registeredModifiers = null;
+
+    AudioManager m_audioManager = null;
 
     public void Clear()
     {
@@ -54,19 +61,20 @@ public class UIDialogueView : UIView
         base.SetVisible(shouldShow);
     }
 
-    public void DisplayText(string text, UnityAction onLineDisplayedCb = null)
+    public void DisplayText(DialogueModel model, UnityAction onLineDisplayedCb = null)
     {
-        m_text.text = text;
+        m_text.text = model.Text;
         m_onLineDisplayedCb = onLineDisplayedCb;
-        if (text == "")
+        if (model.Text == "")
             return;
 
+        m_triggers = model.Triggers;
         m_displaySequence = DOTween.Sequence();
         bool prevIsSpace = true;
 
-        for (int charIndex = 0; charIndex < text.Length; charIndex++)
+        for (int charIndex = 0; charIndex < model.Text.Length; charIndex++)
         {
-            char c = text[charIndex];
+            char c = model.Text[charIndex];
             bool isSpace = Constants.Space.Contains(c);
             float totalDelay = kDefaultTextInterval;
 
@@ -80,8 +88,8 @@ public class UIDialogueView : UIView
                 .Join(m_charTweener.DOColor(charIndex, Color.black, kFadeDuration).SetDelay(totalDelay));
 
             // Append callbacks like anim triggers or screen shake
-            if (IndexInCallbackList(charIndex, out UnityAction action))
-                m_displaySequence.AppendCallback(() => { action.Invoke(); });
+            if (IndexInCallbackList(charIndex, out DialogueTrigger trigger))
+                m_displaySequence.AppendCallback(() => { trigger.Callback.Invoke(trigger.Args); });
 
             // Play talking SFX if talking. Start/stop talking anim as necessary.
             if (isSpace)
@@ -92,8 +100,8 @@ public class UIDialogueView : UIView
             else
             {
                 // Play talking SFX.
-                // if (model.TalkingSFX.AudioClip != null)
-                // m_displaySequence.AppendCallback(() => { m_audioManager.PlayOneShot(model.TalkingSFX); });
+                if (model.TalkingSFX.AudioClip != null)
+                    m_displaySequence.AppendCallback(() => { m_audioManager.PlayOneShot(model.TalkingSFX); });
 
                 if (prevIsSpace && m_talkingActor != null)
                     m_displaySequence.AppendCallback(() => { m_talkingActor.SetTalking(true); });
@@ -116,12 +124,12 @@ public class UIDialogueView : UIView
 
     public void ClearCallbacks()
     {
-        m_callbacks = null;
+        m_triggers = null;
     }
 
-    public void SetCallbacks(List<DialogueCallbacks> callbacks)
+    public void SetCallbacks(DialogueTrigger[] triggers)
     {
-        m_callbacks = callbacks;
+        m_triggers = triggers;
     }
 
     public void ClearModifiers()
@@ -134,17 +142,18 @@ public class UIDialogueView : UIView
         m_modifiers.Clear();
     }
 
-    public void SetTextModifier(IEnumerable<TextAttribute> attributes)
+    public void ApplyTextModifiers(IEnumerable<TextModifier> attributes)
     {
         foreach (var attrib in attributes)
         {
-            switch (attrib.ModType)
+            if (!m_registeredModifiers.ContainsKey(attrib.CommandText))
             {
-                case TextAttribute.Type.Shake:
-                    ShakeTextAt(attrib.StartingIndex, attrib.Length);
-                    break;
-                    // TODO: add more text modifiers
+                Debug.LogErrorFormat("Encountered unhandled text modifier: {0}", attrib.CommandText);
+                continue;
             }
+
+            m_registeredModifiers[attrib.CommandText].Invoke(
+                m_modifiers, m_charTweener, attrib.StartingIndex, attrib.Length, attrib.Args);
         }
     }
 
@@ -153,14 +162,9 @@ public class UIDialogueView : UIView
         m_animator.SetBool(m_animParamShowTicker, shouldShow);
     }
 
-    private void ShakeTextAt(int startingIndex, int count)
+    public void RegisterBehaviour(string command, TextBehaviourAction callback)
     {
-        for (int i = startingIndex; i < startingIndex + count; i++)
-        {
-            m_modifiers.Add(
-                m_charTweener.DOShakePosition(i, 1, 1, 50, 90, false, false)
-                .SetLoops(-1, LoopType.Restart));
-        }
+        m_registeredModifiers.Add(command, callback);
     }
 
     private void OnDisplayLineComplete()
@@ -175,17 +179,17 @@ public class UIDialogueView : UIView
         }
     }
 
-    private bool IndexInCallbackList(int index, out UnityAction action)
+    private bool IndexInCallbackList(int index, out DialogueTrigger trigger)
     {
-        action = null;
-        if (m_callbacks == null)
+        trigger = new DialogueTrigger();
+        if (m_triggers == null)
             return false;
 
-        foreach (var cb in m_callbacks)
+        foreach (var t in m_triggers)
         {
-            if (cb.Index == index)
+            if (t.StartingIndex == index)
             {
-                action = cb.Callback;
+                trigger = t;
                 return true;
             }
         }
@@ -193,12 +197,13 @@ public class UIDialogueView : UIView
         return false;
     }
 
-    // Start is called before the first frame update
     void Awake()
     {
         m_text = GetComponentInChildren<TextMeshProUGUI>();
         m_charTweener = m_text.GetCharTweener();
+
         m_modifiers = new List<Tweener>();
+        m_registeredModifiers = new Dictionary<string, TextBehaviourAction>();
     }
 
     private void OnDestroy()
@@ -209,5 +214,7 @@ public class UIDialogueView : UIView
     void Start()
     {
         TryGetComponent(out m_rectTransform);
+
+        m_audioManager = AudioManager.Instance;
     }
 }

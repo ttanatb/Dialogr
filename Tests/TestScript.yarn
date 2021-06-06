@@ -3,8 +3,10 @@ tags:
 colorID: 0
 position: -6058,502
 ---
-Name: This is the first line
+<bob> Name: This is a surprising statement. <bob, anim gasp> like, what?
 This has <shake>shakey</shake> text.
+<<wait 1>>
+This is a <wait> mid-sentence pause.
 ===
 title: OneLine
 tags: 

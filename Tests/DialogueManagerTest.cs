@@ -50,12 +50,12 @@ namespace Tests
             UnityAction onDialogueEndCb = () => { isEndCbCalled = true; };
             m_dialogueManager.OnDialogueEnd.AddListener(onDialogueEndCb);
 
-            ParsedDialogue res = new ParsedDialogue();
+            DialogueModel model = new DialogueModel();
             UnityAction onLineCompletedcb = null;
             bool isLineUpdateCbCalled = false;
-            UnityAction<ParsedDialogue, UnityAction> lineUpdateCb = (dialogue, cb) =>
+            UnityAction<DialogueModel, UnityAction> lineUpdateCb = (dialogue, cb) =>
             {
-                res = dialogue;
+                model = dialogue;
                 onLineCompletedcb = cb;
                 isLineUpdateCbCalled = true;
             };
@@ -66,14 +66,14 @@ namespace Tests
 
             Assert.IsTrue(isStartCbCalled);
             Assert.IsTrue(isLineUpdateCbCalled);
-            Assert.AreEqual("line 1", res.Line);
+            Assert.AreEqual("line 1", model.Text);
 
             isLineUpdateCbCalled = false;
             onLineCompletedcb.Invoke();
             yield return new WaitUntil(() => isLineUpdateCbCalled);
 
             Assert.IsTrue(isLineUpdateCbCalled);
-            Assert.AreEqual("line 2", res.Line);
+            Assert.AreEqual("line 2", model.Text);
 
             onLineCompletedcb.Invoke();
             yield return new WaitUntil(() => isEndCbCalled);

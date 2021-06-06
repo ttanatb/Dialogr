@@ -1,0 +1,16 @@
+{
+    "name": "Dialogue.Manager.Editor",
+    "references": [
+        "GUID:50c39e7e32567eb4dbfafa2b20b03657",
+        "GUID:703b3af65850d584cbddd89bf054f2a1"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
